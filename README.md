@@ -1,5 +1,97 @@
 # CadQuery editor
 
+This fork of CQ-Editor is a demo for integrating pyqtgraph Parameters in 3D models: https://pyqtgraph.readthedocs.io/en/latest/api_reference/parametertree/index.html
+
+![image](https://github.com/user-attachments/assets/a29e90d4-fb25-4bc4-97db-7eb0218fac60)
+
+Get/set parameters in your 3D model with the param() function. You will need to display the object with show_object(obj, param=myParam).
+Parameters will show under the Object Tree in the Properties Editor when the object is selected. Re-render to run the script with the user data.
+Press F7 or hit the "Clear Parameters" button to clear and load default parameters.
+
+Examples can be found in the /examples directory.
+
+```
+from cadquery import Workplane
+from pyqtgraph.parametertree import Parameter
+
+####BOX EXAMPLE####
+
+#param() will check if Parameter.name() is already loaded and return the Parameter if found.
+#Parameters must have unique names to function properly
+
+parameter = param(
+    Parameter(
+        name='box',
+        children=[
+            {'name': 'Height', 'type': 'float', 'value': 1},
+            {'name': 'Width', 'type': 'float', 'value': 1},
+            {'name': 'Depth', 'type': 'float', 'value': 1},
+        ]
+    )
+)
+
+h = parameter['Height']
+w = parameter['Width']
+d = parameter['Depth']
+
+box = Workplane().box(w,d,h)
+show_object(box,param=parameter)
+
+```
+
+![image](https://github.com/user-attachments/assets/1135a59c-047e-41e2-a155-3a237b95b060)
+
+```
+from PyQt5.QtGui import QFontInfo
+from pyqtgraph.parametertree.parameterTypes import GroupParameter
+
+###HELLO WORLD####
+
+class TextParameter(GroupParameter):
+    def __init__(self, **opts):
+        GroupParameter.__init__(self, **opts)
+    
+        self.addChildren(
+            [   
+                {'name': 'Value', 'type': 'str', 'value': 'Hello World'},
+                {'name': 'Height', 'type': 'float', 'value': 1.0, 'suffix': 'mm'},
+                {'name': 'Text Size', 'type': 'float', 'value': '2.0', 'suffix': 'pts'},
+                {'name': 'Font', 'type': 'font', 'value': 'Arial'},
+                {
+                    'name': 'Kind', 
+                    'type': 'list',
+                    'limits': ['regular', 'bold', 'italic'], 
+                    'value': 'regular'
+                },
+                {
+                    'name': 'H Align', 
+                    'type': 'list', 
+                    'limits': ['center', 'left', 'right'], 
+                    'value': 'left'
+                },
+                {
+                    'name': 'V Align', 
+                    'type': 'list',
+                    'limits': ['center', 'top', 'bottom'] ,  
+                    'value': 'center'
+                },
+
+            ]
+        )
+
+t = param(TextParameter(name='text'))
+props = (t['Value'],t['Text Size'],t['Height'],False,False,True,
+          QFontInfo(t['Font']).family(),None,t['Kind'],t['H Align'],t['V Align'])
+
+text = Workplane().center(0,0).text(*props)
+show_object(text, param=t)
+
+```
+
+![image](https://github.com/user-attachments/assets/e98e6928-935c-414a-948a-b2655d26b793)
+
+
+
 [![Build status](https://ci.appveyor.com/api/projects/status/g98rs7la393mgy91/branch/master?svg=true)](https://ci.appveyor.com/project/adam-urbanczyk/cq-editor/branch/master)
 [![codecov](https://codecov.io/gh/CadQuery/CQ-editor/branch/master/graph/badge.svg)](https://codecov.io/gh/CadQuery/CQ-editor)
 [![Build Status](https://dev.azure.com/cadquery/CQ-editor/_apis/build/status/CadQuery.CQ-editor?branchName=master)](https://dev.azure.com/cadquery/CQ-editor/_build/latest?definitionId=3&branchName=master)
