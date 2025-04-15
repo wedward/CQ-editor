@@ -179,11 +179,23 @@ class Debugger(QObject, ComponentMixin):
                     shortcut="ctrl+F12",
                     triggered=lambda: self.debug_cmd(DbgState.CONT),
                 ),
+                QAction(
+                    icon("trash"),
+                    "Clear Parameters",
+                    self,
+                    shortcut="F7",
+                    triggered=self._clear_params
+                ),
             ]
         }
 
         self._frames = []
         self._stop_debugging = False
+
+        self.parameters = []
+
+    def _clear_params(self):
+        self.parameters = []
 
     def get_current_script(self):
 
@@ -252,7 +264,10 @@ class Debugger(QObject, ComponentMixin):
 
         cq_objects = {}
 
-        def _show_object(obj, name=None, options={}):
+        def _show_object(obj, name=None, options={}, param=None):
+
+            if param:
+                obj.parameters = param
 
             if name:
                 cq_objects.update({name: SimpleNamespace(shape=obj, options=options)})
@@ -273,11 +288,21 @@ class Debugger(QObject, ComponentMixin):
 
             _show_object(obj, name, options=dict(color="red", alpha=0.2))
 
+        def _param(param):
+
+            for p in self.parameters:
+                if p.name() == param.name():
+                    return p
+            
+            self.parameters.append(param)
+            return param
+        
         module.__dict__["show_object"] = _show_object
         module.__dict__["debug"] = _debug
         module.__dict__["rand_color"] = self._rand_color
         module.__dict__["log"] = lambda x: info(str(x))
         module.__dict__["cq"] = cq
+        module.__dict__["param"] = _param
 
         return cq_objects, set(module.__dict__) - {"cq"}
 

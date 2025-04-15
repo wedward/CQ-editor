@@ -211,7 +211,6 @@ class ObjectTree(QWidget, ComponentMixin):
 
         self._splitter = splitter(
             (self.tree, self.properties_editor),
-            stretch_factors=(2, 1),
             orientation=Qt.Vertical,
         )
         layout(self, (self._splitter,), top_widget=self)
@@ -399,7 +398,11 @@ class ObjectTree(QWidget, ComponentMixin):
             self._export_STEP_action.setEnabled(True)
             self._clear_current_action.setEnabled(True)
             self.sigCQObjectSelected.emit(item.shape)
-            self.properties_editor.setParameters(item.properties, showTop=False)
+            if hasattr(item.shape, 'parameters'):
+                self.properties_editor.setParameters(item.shape.parameters, showTop=False)
+                self.properties_editor.addParameters(item.properties)
+            else:
+                self.properties_editor.setParameters(item.properties, showTop=False)
             self.properties_editor.setEnabled(True)
         elif item is self.CQ and item.childCount() > 0:
             self._export_STL_action.setEnabled(True)
